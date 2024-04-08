@@ -6,7 +6,7 @@ fn main() {
     let content = match std::fs::read_to_string(&args.path) {
         Ok(content) => content,
         Err(err) => {
-            error!("Error: {}", err);
+            error!("Could not read file: {}", err);
             std::process::exit(1);
         }
     };
