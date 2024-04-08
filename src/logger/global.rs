@@ -3,10 +3,12 @@ use std::sync::Mutex;
 
 use super::log::Logger;
 
+// setup a global logger
 lazy_static! {
     pub static ref LOGGER: Mutex<Logger> = Mutex::new(Logger::new());
 }
 
+// define macros for logging
 #[macro_export]
 macro_rules! info {
     ($($arg:tt)*) => {
