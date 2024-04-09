@@ -48,6 +48,12 @@ pub fn get_args() -> Cli {
         }
     };
 
+    if pattern.is_empty() {
+        println!("{}", error_msg);
+        error!("Pattern is empty");
+        std::process::exit(1);
+    }
+
     let path = match std::env::args().nth(2) {
         Some(arg) => arg,
         None => {

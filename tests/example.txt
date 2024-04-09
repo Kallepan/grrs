@@ -1,4 +1,0 @@
-pattern
-test_string_2
-pattern
-asd
