@@ -1,7 +1,11 @@
 use std::io::{self, Write};
+use std::sync::{Arc, Mutex};
 use std::time::SystemTime;
 
-pub struct Logger;
+pub struct Logger {
+    stdout: Arc<Mutex<dyn Write + Send>>,
+    stderr: Arc<Mutex<dyn Write + Send>>,
+}
 
 pub enum LogLevel {
     Info,
@@ -11,19 +15,17 @@ pub enum LogLevel {
 
 impl Logger {
     pub fn new() -> Self {
-        Logger
+        Logger {
+            stdout: Arc::new(Mutex::new(io::stdout())),
+            stderr: Arc::new(Mutex::new(io::stderr())),
+        }
     }
 
     pub fn log(&self, level: LogLevel, message: &str) {
-        let mut output: Box<dyn Write> = match level {
-            LogLevel::Info | LogLevel::Warning => Box::new(io::stdout()),
-            LogLevel::Error => Box::new(io::stderr()),
-        };
-
-        let level_str = match level {
-            LogLevel::Info => "INFO",
-            LogLevel::Warning => "WARNING",
-            LogLevel::Error => "ERROR",
+        let (level_str, mut output) = match level {
+            LogLevel::Info => ("INFO", self.stdout.lock().unwrap()),
+            LogLevel::Warning => ("WARNING", self.stdout.lock().unwrap()),
+            LogLevel::Error => ("ERROR", self.stderr.lock().unwrap()),
         };
 
         let timestamp = match SystemTime::now().duration_since(SystemTime::UNIX_EPOCH) {
@@ -46,5 +48,18 @@ impl Logger {
 
     pub fn error(&self, message: &str) {
         self.log(LogLevel::Error, message);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_logger() {
+        let logger = Logger::new();
+        logger.info("info message");
+        logger.warn("warn message");
+        logger.error("error message");
     }
 }

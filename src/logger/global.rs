@@ -38,4 +38,23 @@ mod tests {
         warn!("warn message");
         error!("error message");
     }
+
+    #[test]
+    fn test_logger_threaded() {
+        use std::thread;
+
+        let handles: Vec<_> = (0..10)
+            .map(|i| {
+                thread::spawn(move || {
+                    info!("info message {}", i);
+                    warn!("warn message {}", i);
+                    error!("error message {}", i);
+                })
+            })
+            .collect();
+
+        for handle in handles {
+            handle.join().unwrap();
+        }
+    }
 }
