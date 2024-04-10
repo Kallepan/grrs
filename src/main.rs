@@ -1,4 +1,6 @@
 use grrs::{error, flags::parser::get_args};
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
 
 fn find_matches(content: String, pattern: &str, mut writer: impl std::io::Write) {
     for (_, line) in content.lines().enumerate() {
@@ -16,18 +18,21 @@ fn find_matches(content: String, pattern: &str, mut writer: impl std::io::Write)
     }
 }
 
-fn main() {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let running = Arc::new(AtomicBool::new(true));
+    let r = running.clone();
+
+    ctrlc::set_handler(move || {
+        r.store(false, Ordering::SeqCst);
+    })
+    .expect("Error setting Ctrl-C handler");
+
     let args = get_args();
 
-    let content = match std::fs::read_to_string(&args.path) {
-        Ok(content) => content,
-        Err(err) => {
-            error!("Could not read file: {}", err);
-            std::process::exit(1);
-        }
-    };
-
+    let content = std::fs::read_to_string(&args.path).expect("could not read file");
     find_matches(content, &args.pattern, &mut std::io::stdout());
+
+    Ok(())
 }
 
 #[test]
