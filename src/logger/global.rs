@@ -30,10 +30,18 @@ macro_rules! error {
     };
 }
 
+#[macro_export]
+macro_rules! debug {
+    ($($arg:tt)*) => {
+        $crate::logger::global::LOGGER.lock().unwrap().debug(&format!($($arg)*));
+    };
+}
+
 #[cfg(test)]
 mod tests {
     #[test]
     fn test_logger() {
+        debug!("debug message");
         info!("info message");
         warn!("warn message");
         error!("error message");
@@ -46,6 +54,7 @@ mod tests {
         let handles: Vec<_> = (0..10)
             .map(|i| {
                 thread::spawn(move || {
+                    debug!("debug message {}", i);
                     info!("info message {}", i);
                     warn!("warn message {}", i);
                     error!("error message {}", i);

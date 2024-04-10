@@ -8,6 +8,7 @@ pub struct Logger {
 }
 
 pub enum LogLevel {
+    Debug,
     Info,
     Warning,
     Error,
@@ -23,6 +24,7 @@ impl Logger {
 
     pub fn log(&self, level: LogLevel, message: &str) {
         let (level_str, mut output) = match level {
+            LogLevel::Debug => ("DEBUG", self.stdout.lock().unwrap()),
             LogLevel::Info => ("INFO", self.stdout.lock().unwrap()),
             LogLevel::Warning => ("WARNING", self.stdout.lock().unwrap()),
             LogLevel::Error => ("ERROR", self.stderr.lock().unwrap()),
@@ -49,6 +51,10 @@ impl Logger {
     pub fn error(&self, message: &str) {
         self.log(LogLevel::Error, message);
     }
+
+    pub fn debug(&self, message: &str) {
+        self.log(LogLevel::Debug, message);
+    }
 }
 
 #[cfg(test)]
@@ -58,6 +64,7 @@ mod tests {
     #[test]
     fn test_logger() {
         let logger = Logger::new();
+        logger.debug("debug message");
         logger.info("info message");
         logger.warn("warn message");
         logger.error("error message");
