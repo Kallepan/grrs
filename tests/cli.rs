@@ -23,24 +23,20 @@ fn find_a_match() -> Result<(), Box<dyn std::error::Error>> {
     let mut cmd = Command::cargo_bin("grrs")?;
     cmd.arg("lorem").arg(file.path());
 
-    cmd.assert()
-        .success()
-        .stdout(predicate::str::contains("lorem ipsum"));
+    cmd.assert().success().stdout("lorem ipsum\n");
 
     Ok(())
 }
 
 #[test]
-fn find_matches() -> Result<(), Box<dyn std::error::Error>> {
+fn find_multiple_matches() -> Result<(), Box<dyn std::error::Error>> {
     let file = assert_fs::NamedTempFile::new("sample.txt")?;
-    file.write_str("lorem ipsum\ndolor sit amet")?;
+    file.write_str("lorem ipsum\ndolor sit amet\nlorems")?;
 
     let mut cmd = Command::cargo_bin("grrs")?;
     cmd.arg("lorem").arg(file.path());
 
-    cmd.assert()
-        .success()
-        .stdout(predicate::str::contains("lorem ipsum"));
+    cmd.assert().success().stdout("lorem ipsum\nlorems\n");
 
     Ok(())
 }
